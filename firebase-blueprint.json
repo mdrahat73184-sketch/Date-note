@@ -1,0 +1,107 @@
+{
+  "entities": {
+    "Proposal": {
+      "title": "Proposal",
+      "description": "An interactive date or hangout proposal shared between a sender and receiver across devices.",
+      "type": "object",
+      "properties": {
+        "senderName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "description": "Display name of the sender who created the proposal."
+        },
+        "receiverName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "description": "Display name of the receiver invited by the proposal."
+        },
+        "outingTopic": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "Custom outing type or invitation title set by the sender (e.g. Date, Hangout, Movie, Dinner, or custom text)."
+        },
+        "treatPayer": {
+          "type": "string",
+          "enum": ["receiver", "sender"],
+          "maxLength": 20,
+          "description": "Which person the sender selected to end up treating (receiver or sender)."
+        },
+        "pin": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 4,
+          "pattern": "^[0-9]{4}$",
+          "description": "4-digit private PIN protecting the sender dashboard."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["waiting", "opened", "said_yes"],
+          "description": "Current lifecycle status of the proposal."
+        },
+        "noDodges": {
+          "type": "integer",
+          "description": "Number of times the receiver tried to tap or hover the dodging No button."
+        },
+        "treatClicks": {
+          "type": "integer",
+          "description": "Number of times the receiver tapped the shrinking treat card."
+        },
+        "day": {
+          "type": "string",
+          "maxLength": 60,
+          "description": "Chosen day for the date or outing."
+        },
+        "time": {
+          "type": "string",
+          "maxLength": 60,
+          "description": "Chosen time for the date or outing."
+        },
+        "plan": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Chosen or custom plan for the date or outing."
+        },
+        "treatChoice": {
+          "type": "string",
+          "enum": ["", "receiver", "sender"],
+          "maxLength": 20,
+          "description": "Final treat choice confirmed by the receiver."
+        },
+        "letter": {
+          "type": "string",
+          "maxLength": 4000,
+          "description": "Generated keepsake letter from the sender's point of view."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the proposal was created."
+        }
+      },
+      "required": [
+        "senderName",
+        "receiverName",
+        "outingTopic",
+        "treatPayer",
+        "pin",
+        "status",
+        "noDodges",
+        "treatClicks",
+        "day",
+        "time",
+        "plan",
+        "treatChoice",
+        "letter",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/proposals/{proposalId}": {
+      "schema": { "$ref": "#/entities/Proposal" },
+      "description": "Shared proposal documents accessed via unique proposalId in the link."
+    }
+  }
+}

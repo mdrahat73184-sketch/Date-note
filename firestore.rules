@@ -1,0 +1,143 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: deny everything by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Startup connection check document
+    match /test/connection {
+      allow get: if true;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidProposalId(id) {
+      return id is string && id.size() >= 8 && id.size() <= 64 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidProposal(data) {
+      return data.keys().hasAll([
+          'senderName',
+          'receiverName',
+          'outingTopic',
+          'treatPayer',
+          'pin',
+          'status',
+          'noDodges',
+          'treatClicks',
+          'day',
+          'time',
+          'plan',
+          'treatChoice',
+          'letter',
+          'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'senderName',
+          'receiverName',
+          'outingTopic',
+          'treatPayer',
+          'pin',
+          'status',
+          'noDodges',
+          'treatClicks',
+          'day',
+          'time',
+          'plan',
+          'treatChoice',
+          'letter',
+          'createdAt'
+        ])
+        && data.senderName is string && data.senderName.size() >= 1 && data.senderName.size() <= 60
+        && data.receiverName is string && data.receiverName.size() >= 1 && data.receiverName.size() <= 60
+        && data.outingTopic is string && data.outingTopic.size() <= 80
+        && data.treatPayer is string && data.treatPayer in ['receiver', 'sender']
+        && data.pin is string && data.pin.size() == 4 && data.pin.matches('^[0-9]{4}$')
+        && data.status is string && data.status in ['waiting', 'opened', 'said_yes']
+        && data.noDodges is int && data.noDodges >= 0 && data.noDodges <= 10000
+        && data.treatClicks is int && data.treatClicks >= 0 && data.treatClicks <= 10000
+        && data.day is string && data.day.size() <= 60
+        && data.time is string && data.time.size() <= 60
+        && data.plan is string && data.plan.size() <= 120
+        && data.treatChoice is string && data.treatChoice in ['', 'receiver', 'sender']
+        && data.letter is string && data.letter.size() <= 4000
+        && data.createdAt is timestamp;
+    }
+
+    match /proposals/{proposalId} {
+      allow list: if false;
+      allow get: if isValidProposalId(proposalId);
+      allow delete: if false;
+
+      allow create: if isValidProposalId(proposalId)
+        && isValidProposal(incoming())
+        && incoming().status == 'waiting'
+        && incoming().noDodges == 0
+        && incoming().treatClicks == 0
+        && incoming().day == ''
+        && incoming().time == ''
+        && incoming().plan == ''
+        && incoming().treatChoice == ''
+        && incoming().letter == ''
+        && incoming().createdAt == request.time;
+
+      allow update: if isValidProposalId(proposalId)
+        && isValidProposal(incoming())
+        && incoming().senderName == existing().senderName
+        && incoming().receiverName == existing().receiverName
+        && incoming().outingTopic == existing().outingTopic
+        && incoming().treatPayer == existing().treatPayer
+        && incoming().pin == existing().pin
+        && incoming().createdAt == existing().createdAt
+        && existing().letter == ''
+        && (
+          // Action 1: Receiver opens the invitation
+          (
+            existing().status == 'waiting'
+            && incoming().status == 'opened'
+            && incoming().diff(existing()).affectedKeys().hasOnly(['status'])
+          )
+          ||
+          // Action 2: Receiver tries to click/hover/touch the dodging "No" button
+          (
+            (existing().status == 'waiting' || existing().status == 'opened')
+            && incoming().noDodges == existing().noDodges + 1
+            && incoming().diff(existing()).affectedKeys().hasOnly(['noDodges'])
+          )
+          ||
+          // Action 3: Receiver clicks "Yes"
+          (
+            (existing().status == 'waiting' || existing().status == 'opened')
+            && incoming().status == 'said_yes'
+            && incoming().diff(existing()).affectedKeys().hasOnly(['status'])
+          )
+          ||
+          // Action 4: Receiver taps the shrinking treat card
+          (
+            existing().status == 'said_yes'
+            && incoming().treatClicks == existing().treatClicks + 1
+            && incoming().diff(existing()).affectedKeys().hasOnly(['treatClicks'])
+          )
+          ||
+          // Action 5: Receiver seals the date details and generated letter
+          (
+            existing().status == 'said_yes'
+            && incoming().day.size() >= 1
+            && incoming().time.size() >= 1
+            && incoming().plan.size() >= 1
+            && incoming().treatChoice == existing().treatPayer
+            && incoming().letter.size() >= 1
+            && incoming().diff(existing()).affectedKeys().hasOnly(['day', 'time', 'plan', 'treatChoice', 'letter'])
+          )
+        );
+    }
+  }
+}
