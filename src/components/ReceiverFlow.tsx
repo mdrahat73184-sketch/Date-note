@@ -42,6 +42,7 @@ import {
   playSparklePoofSound,
 } from '../utils/effects';
 import { ConfettiHearts, SwayingFlower } from './SwayingFlower';
+import keepsakeWaxSealImg from '../assets/images/keepsake_wax_seal_1795111854426.jpg';
 
 interface ReceiverFlowProps {
   proposalId: string;
@@ -830,7 +831,7 @@ export function ReceiverFlow({
             >
               <div className="flex flex-col items-center text-center space-y-3">
                 <img
-                  src="/src/assets/images/keepsake_wax_seal_1795111854426.jpg"
+                  src={keepsakeWaxSealImg}
                   alt="Crimson wax seal stamped on cream stationery"
                   referrerPolicy="no-referrer"
                   className="w-16 h-16 rounded-full object-cover border border-[#E7DDD2] shadow-sm"

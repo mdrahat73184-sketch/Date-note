@@ -9,7 +9,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PORT = Number(process.env.PORT || 3000);
-const isProduction = process.env.NODE_ENV === 'production';
+const distPath = path.resolve(__dirname, 'dist');
+const hasDistBuild = fs.existsSync(path.join(distPath, 'index.html'));
+const isProduction =
+  process.env.NODE_ENV === 'production' ||
+  (process.env.NODE_ENV !== 'development' && hasDistBuild);
 
 function getGeminiClient(): GoogleGenAI {
   return new GoogleGenAI({
@@ -49,6 +53,10 @@ function cleanCount(value: unknown): number {
 async function startServer() {
   const app = express();
   app.use(express.json({ limit: '64kb' }));
+
+  app.get('/api/health', (_req: Request, res: Response) => {
+    res.json({ ok: true });
+  });
 
   app.post('/api/generate-letter', async (req: Request, res: Response) => {
     try {
@@ -116,7 +124,7 @@ async function startServer() {
 
       const ai = getGeminiClient();
       const response = await ai.models.generateContent({
-        model: 'gemini-4-hydrogen',
+        model: process.env.GEMINI_MODEL || 'gemini-4-hydrogen',
         contents: prompt,
         config: {
           systemInstruction:
@@ -152,7 +160,6 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.resolve(__dirname, 'dist');
     app.use(express.static(distPath));
     app.get('*', (_req: Request, res: Response) => {
       const indexFile = path.join(distPath, 'index.html');
