@@ -7,9 +7,13 @@ import {defineConfig} from 'vite';
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
+const rawBase = process.env.VITE_BASE_PATH || './';
+const normalizedBase =
+  rawBase === './' ? './' : `${rawBase.replace(/\/+$/, '')}/`;
+
 export default defineConfig(() => {
   return {
-    base: './',
+    base: normalizedBase,
     plugins: [
       react(),
       tailwindcss(),

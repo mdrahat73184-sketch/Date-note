@@ -215,6 +215,81 @@ export async function sealProposal(
   }
 }
 
+function buildStaticFallbackLetter(params: {
+  senderName: string;
+  receiverName: string;
+  outingTopic: string;
+  day: string;
+  time: string;
+  plan: string;
+  treatPayer: TreatPayer;
+  treatClicks: number;
+  noDodges: number;
+  lang: Language;
+}): string {
+  const {
+    senderName,
+    receiverName,
+    outingTopic,
+    day,
+    time,
+    plan,
+    treatPayer,
+    treatClicks,
+    noDodges,
+    lang,
+  } = params;
+
+  if (lang === 'bn') {
+    const dodgeLine =
+      noDodges > 0
+        ? `তুমি "না" বাটনটার পেছনে ${noDodges} বার ছুটলেও শেষ পর্যন্ত "হ্যাঁ" বলেছ দেখে সত্যিই খুব খুশি হয়েছি!`
+        : `এক ক্লিকেই "হ্যাঁ" বলে দেওয়ায় আমার পুরো দিনটাই সুন্দর হয়ে গেছে!`;
+    const treatLine =
+      treatPayer === 'sender'
+        ? treatClicks > 0
+          ? `তুমি ${treatClicks} বার নিজে বিল দিতে চাইলেও আজকের ${plan}-এর ট্রিটটা কিন্তু আমারই থাকল—পরের বার নাহয় তুমি দিও।`
+          : `আজকের ${plan}-এর পুরো ট্রিটটা আমার পক্ষ থেকে, তুমি শুধু সময়মতো চলে এসো।`
+        : treatClicks > 0
+          ? `আমাকে দিয়ে ট্রিট দেওয়ানোর ${treatClicks} বার চেষ্টার পরও শেষমেশ ট্রিটটা কিন্তু তোমারই রইল!`
+          : `নিজে থেকেই ট্রিট দেওয়ার দায়িত্ব নেওয়ায় তোমাকে অসংখ্য ধন্যবাদ!`;
+    return [
+      `প্রিয় ${receiverName},`,
+      '',
+      dodgeLine,
+      `${day} তারিখে ${time} সময়ে আমাদের ${outingTopic || 'আড্ডা'} (${plan}) একসাথে দারুণ কাটবে বলে আশা করছি।`,
+      treatLine,
+      '',
+      `তোমার (একটু নার্ভাস হয়ে),`,
+      `— ${senderName}`,
+    ].join('\n');
+  }
+
+  const dodgeLine =
+    noDodges > 0
+      ? `Even after chasing the "No" button ${noDodges} time(s), seeing you say YES made my whole week.`
+      : `You saying YES right away made my heart do a very uncool happy dance.`;
+  const treatLine =
+    treatPayer === 'sender'
+      ? treatClicks > 0
+        ? `And yes, even though you tried to pay ${treatClicks} time(s), this treat is on me—you can get the next one.`
+        : `No arguing about the bill either—this treat is happily on me.`
+      : treatClicks > 0
+        ? `Also, after ${treatClicks} attempt(s) to make me pay, I am officially looking forward to your treat!`
+        : `Also, thank you for generously claiming the treat without a single hesitation!`;
+
+  return [
+    `Dear ${receiverName},`,
+    '',
+    dodgeLine,
+    `I already have ${day} at ${time} circled in my head for our ${outingTopic || 'date'} (${plan}).`,
+    treatLine,
+    '',
+    `Yours (a little nervously),`,
+    `— ${senderName}`,
+  ].join('\n');
+}
+
 export async function generateLetter(params: {
   senderName: string;
   receiverName: string;
@@ -228,15 +303,35 @@ export async function generateLetter(params: {
   noDodges: number;
   lang: Language;
 }): Promise<string> {
-  const res = await fetch('/api/generate-letter', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(params),
-  });
+  try {
+    const res = await fetch('/api/generate-letter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    });
 
-  const data = (await res.json()) as { letter?: string; error?: string };
-  if (!res.ok || !data.letter) {
-    throw new Error(data.error || 'Could not generate the letter right now.');
+    if (res.status === 404 || res.status === 405) {
+      return buildStaticFallbackLetter(params);
+    }
+
+    const rawText = await res.text();
+    let data: { letter?: string; error?: string } = {};
+    try {
+      data = JSON.parse(rawText) as { letter?: string; error?: string };
+    } catch {
+      if (!res.ok) {
+        return buildStaticFallbackLetter(params);
+      }
+    }
+
+    if (!res.ok || !data.letter) {
+      throw new Error(data.error || 'Could not generate the letter right now.');
+    }
+    return data.letter;
+  } catch (err) {
+    if (err instanceof TypeError) {
+      return buildStaticFallbackLetter(params);
+    }
+    throw err;
   }
-  return data.letter;
 }
