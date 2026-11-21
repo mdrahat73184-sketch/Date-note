@@ -147,9 +147,13 @@ export function SenderCreator({
   };
 
   const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+  const currentPath =
+    typeof window !== 'undefined'
+      ? window.location.pathname.replace(/\/index\.html$/, '').replace(/\/+$/, '')
+      : '';
   const { origin: shareableOrigin, isDevPreview } = getShareableOrigin();
-  const receiverUrl = created ? `${shareableOrigin}/?p=${created.proposalId}` : '';
-  const dashboardUrl = created ? `${currentOrigin}/?d=${created.proposalId}` : '';
+  const receiverUrl = created ? `${shareableOrigin}${currentPath}/?p=${created.proposalId}` : '';
+  const dashboardUrl = created ? `${currentOrigin}${currentPath}/?d=${created.proposalId}` : '';
 
   const copyText = async (text: string, field: 'receiver' | 'dashboard' | 'pin') => {
     playPopSound();

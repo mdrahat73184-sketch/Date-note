@@ -83,7 +83,11 @@ export function SenderDashboard({
   };
 
   const { origin: shareableOrigin } = getShareableOrigin();
-  const receiverUrl = `${shareableOrigin}/?p=${proposalId}`;
+  const currentPath =
+    typeof window !== 'undefined'
+      ? window.location.pathname.replace(/\/index\.html$/, '').replace(/\/+$/, '')
+      : '';
+  const receiverUrl = `${shareableOrigin}${currentPath}/?p=${proposalId}`;
 
   const copyReceiverUrl = async () => {
     playPopSound();

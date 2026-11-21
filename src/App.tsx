@@ -75,6 +75,11 @@ export default function App() {
     setRoute(parseRouteFromLocation());
   };
 
+  const basePath =
+    typeof window !== 'undefined'
+      ? window.location.pathname.replace(/\/index\.html$/, '') || '/'
+      : '/';
+
   return (
     <ErrorBoundary>
       {route.mode === 'receiver' && (
@@ -84,7 +89,7 @@ export default function App() {
           onToggleLang={toggleLang}
           soundMuted={muted}
           onToggleSound={toggleSound}
-          onStartOver={() => navigate('/')}
+          onStartOver={() => navigate(basePath)}
         />
       )}
 
@@ -96,7 +101,7 @@ export default function App() {
           onToggleLang={toggleLang}
           soundMuted={muted}
           onToggleSound={toggleSound}
-          onBackHome={() => navigate('/')}
+          onBackHome={() => navigate(basePath)}
         />
       )}
 
@@ -106,8 +111,8 @@ export default function App() {
           onToggleLang={toggleLang}
           soundMuted={muted}
           onToggleSound={toggleSound}
-          onOpenProposal={(id) => navigate(`/?p=${encodeURIComponent(id)}`)}
-          onOpenDashboard={(id) => navigate(`/?d=${encodeURIComponent(id)}`)}
+          onOpenProposal={(id) => navigate(`${basePath}?p=${encodeURIComponent(id)}`)}
+          onOpenDashboard={(id) => navigate(`${basePath}?d=${encodeURIComponent(id)}`)}
         />
       )}
     </ErrorBoundary>
