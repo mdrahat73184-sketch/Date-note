@@ -54,9 +54,9 @@ export function getCopy(lang: Language) {
       createTitleSuffix: ' আছে।',
       createSubtitle:
         'তোমার নাম, তার নাম আর কী প্ল্যানের জন্য ডাকছ তা লেখো—সাথে ঠিক করো ট্রিট কে দেবে!',
-      senderLabel: 'তোমার নাম (প্রেরক)',
+      senderLabel: 'তোমার নাম',
       senderPlaceholder: 'যেমন: রাহুল',
-      receiverLabel: 'তার নাম (প্রাপক)',
+      receiverLabel: 'তার নাম',
       receiverPlaceholder: 'যেমন: দিয়া',
       outingLabel: 'কীসের জন্য ডাকছ? (ডেট, ঘুরতে যাওয়া বা কাস্টম)',
       outingPlaceholder: 'নিজের মতো লেখো... (যেমন: ফুচকা ডেট, ঘুরতে যাওয়া)',
@@ -181,9 +181,9 @@ export function getCopy(lang: Language) {
     createTitleSuffix: '.',
     createSubtitle:
       'Enter your names, customize what the invite is for, and decide who ends up treating!',
-    senderLabel: 'Your name (Sender)',
+    senderLabel: 'Your name',
     senderPlaceholder: 'e.g. RI',
-    receiverLabel: 'Their name (Receiver)',
+    receiverLabel: 'Their name',
     receiverPlaceholder: 'e.g. Hanu',
     outingLabel: 'What are you asking for? (Date, hangout, or custom)',
     outingPlaceholder: 'Type your own... (e.g. Movie night, Sunset walk)',
