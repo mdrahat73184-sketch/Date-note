@@ -6,6 +6,7 @@ import {
   Clock,
   Heart,
   Loader2,
+  MapPin,
   Pencil,
   RotateCcw,
   Share2,
@@ -81,6 +82,7 @@ export function ReceiverFlow({
   // Screen 3: Plan & Who's treating state
   const [day, setDay] = useState('');
   const [time, setTime] = useState('18:30');
+  const [location, setLocation] = useState('');
   const [planChoice, setPlanChoice] = useState('');
   const [customPlanText, setCustomPlanText] = useState('');
   const [treatTaps, setTreatTaps] = useState(0);
@@ -115,6 +117,7 @@ export function ReceiverFlow({
         if (data.letter) {
           setDay(data.day);
           setTime(data.time);
+          setLocation(data.location);
           const isPreset = PLAN_OPTIONS.some((opt) => opt.id === data.plan);
           if (isPreset || !data.plan) {
             setPlanChoice(data.plan);
@@ -228,12 +231,14 @@ export function ReceiverFlow({
 
   const resolvedPlan =
     planChoice === '__custom__' ? customPlanText.trim().slice(0, 120) : planChoice;
+  const cleanLocation = location.trim().slice(0, 120);
 
   const handleSealWithLetter = async () => {
     if (
       !proposal ||
       !day ||
       !time ||
+      !cleanLocation ||
       !resolvedPlan ||
       treatChoice !== proposal.treatPayer ||
       sealing
@@ -251,6 +256,7 @@ export function ReceiverFlow({
         outingTopic: proposal.outingTopic || 'Date',
         day,
         time,
+        location: cleanLocation,
         plan: resolvedPlan,
         treatPayer: proposal.treatPayer,
         treatChoice: proposal.treatPayer,
@@ -262,6 +268,7 @@ export function ReceiverFlow({
       await sealProposal(proposal.id, {
         day,
         time,
+        location: cleanLocation,
         plan: resolvedPlan,
         treatChoice: proposal.treatPayer,
         letter: generated,
@@ -274,6 +281,7 @@ export function ReceiverFlow({
               ...prev,
               day,
               time,
+              location: cleanLocation,
               plan: resolvedPlan,
               treatChoice: proposal.treatPayer,
               letter: generated,
@@ -295,7 +303,8 @@ export function ReceiverFlow({
   const handleShareGoodNews = async () => {
     if (!proposal) return;
     playPopSound();
-    const summary = `${proposal.senderName} & ${proposal.receiverName} — ${resolvedPlan} on ${day} at ${time}!\n\n${letter}`;
+    const wherePart = cleanLocation ? ` at ${cleanLocation}` : '';
+    const summary = `${proposal.senderName} & ${proposal.receiverName} — ${resolvedPlan}${wherePart} on ${day} at ${time}!\n\n${letter}`;
     if (navigator.share) {
       try {
         await navigator.share({
@@ -389,7 +398,7 @@ export function ReceiverFlow({
     : t.mustPickWinnerReceiver;
 
   const canSeal = Boolean(
-    day && time && resolvedPlan && treatChoice === proposal.treatPayer,
+    day && time && cleanLocation && resolvedPlan && treatChoice === proposal.treatPayer,
   );
 
   const selectedPlanLabel =
@@ -626,6 +635,26 @@ export function ReceiverFlow({
                 </div>
               </div>
 
+              {/* Location (typed input) */}
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="location-input"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#4A403D]"
+                >
+                  <MapPin className="w-3.5 h-3.5 text-[#B91C3B]" />
+                  {t.locationLabel}
+                </label>
+                <input
+                  id="location-input"
+                  type="text"
+                  maxLength={120}
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder={t.locationPlaceholder}
+                  className="w-full min-h-[46px] px-3.5 py-2 rounded-xl border border-[#E3D8CC] bg-[#FAF6F0]/70 text-sm text-[#181414] placeholder:text-[#A3958E] focus:outline-none focus:ring-2 focus:ring-[#B91C3B]/25 focus:border-[#B91C3B]"
+                />
+              </div>
+
               {/* Plan Pills + Custom Option */}
               <div className="space-y-2.5">
                 <p className="text-xs font-semibold text-[#4A403D]">{t.whatLabel}</p>
@@ -851,6 +880,12 @@ export function ReceiverFlow({
                 <span className="px-3 py-1 rounded-full bg-[#FAF6F0] border border-[#E5DAD0] text-xs font-medium text-[#4A403D]">
                   {formatTimeLabel(time)}
                 </span>
+                {cleanLocation && (
+                  <span className="px-3 py-1 rounded-full bg-[#FAF6F0] border border-[#E5DAD0] text-xs font-medium text-[#4A403D] inline-flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-[#B91C3B]" />
+                    {cleanLocation}
+                  </span>
+                )}
                 <span className="px-3 py-1 rounded-full bg-[#FAF6F0] border border-[#E5DAD0] text-xs font-medium text-[#4A403D]">
                   {selectedPlanLabel}
                 </span>

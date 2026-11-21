@@ -32,6 +32,7 @@ interface GenerateLetterBody {
   outingTopic?: unknown;
   day?: unknown;
   time?: unknown;
+  location?: unknown;
   plan?: unknown;
   treatPayer?: unknown;
   treatChoice?: unknown;
@@ -73,6 +74,7 @@ async function startServer() {
       const outingTopic = cleanString(body.outingTopic, 80) || 'Date';
       const day = cleanString(body.day, 60);
       const time = cleanString(body.time, 60);
+      const location = cleanString(body.location, 120);
       const plan = cleanString(body.plan, 120);
       const treatPayer = body.treatPayer === 'sender' ? 'sender' : 'receiver';
       const treatChoice = cleanString(body.treatChoice, 40);
@@ -112,12 +114,13 @@ async function startServer() {
         `- Outing / Occasion: ${outingTopic}`,
         `- Day: ${day}`,
         `- Time: ${time}`,
+        ...(location ? [`- Location: ${location}`] : []),
         `- Plan: ${plan}`,
         `- Treating situation: ${treatContext}`,
         `- Saying yes note: ${dodgeContext}`,
         `Rules:`,
         `- Keep it strictly 4 to 5 short lines plus the greeting and sign-off.`,
-        `- Mention the occasion/plan, day, time, and who is treating in a funny, affectionate way.`,
+        `- Mention the occasion/plan, day, time${location ? ', location' : ''}, and who is treating in a funny, affectionate way.`,
         `- Plain text only (no markdown asterisks, no bullet points, no quotes wrapping the whole letter).`,
         `- ${langInstruction}`,
       ].join('\n');

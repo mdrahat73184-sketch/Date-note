@@ -58,6 +58,11 @@
           "maxLength": 60,
           "description": "Chosen time for the date or outing."
         },
+        "location": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Typed location or meeting spot chosen by the receiver."
+        },
         "plan": {
           "type": "string",
           "maxLength": 120,

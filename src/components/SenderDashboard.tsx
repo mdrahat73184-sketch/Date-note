@@ -352,7 +352,7 @@ export function SenderDashboard({
               {t.outingTopicSummaryLabel}: <strong className="text-[#181414]">{outingTopicDisplay}</strong>
             </span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
             <div>
               <p className="text-xs text-[#8A7D77]">{t.dayLabel}</p>
               <p className="font-semibold text-[#181414] mt-0.5">
@@ -372,6 +372,12 @@ export function SenderDashboard({
                       return `${h12}:${mStr} ${suffix}`;
                     })()
                   : t.notChosenYet}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-[#8A7D77]">{t.locationLabel}</p>
+              <p className="font-semibold text-[#181414] mt-0.5 break-words">
+                {proposal.location || t.notChosenYet}
               </p>
             </div>
             <div>

@@ -51,6 +51,7 @@ service cloud.firestore {
           'treatClicks',
           'day',
           'time',
+          'location',
           'plan',
           'treatChoice',
           'letter',
@@ -66,6 +67,7 @@ service cloud.firestore {
         && data.treatClicks is int && data.treatClicks >= 0 && data.treatClicks <= 10000
         && data.day is string && data.day.size() <= 60
         && data.time is string && data.time.size() <= 60
+        && (!('location' in data) || (data.location is string && data.location.size() <= 120))
         && data.plan is string && data.plan.size() <= 120
         && data.treatChoice is string && data.treatChoice in ['', 'receiver', 'sender']
         && data.letter is string && data.letter.size() <= 4000
@@ -84,6 +86,8 @@ service cloud.firestore {
         && incoming().treatClicks == 0
         && incoming().day == ''
         && incoming().time == ''
+        && 'location' in incoming()
+        && incoming().location == ''
         && incoming().plan == ''
         && incoming().treatChoice == ''
         && incoming().letter == ''
@@ -132,10 +136,12 @@ service cloud.firestore {
             existing().status == 'said_yes'
             && incoming().day.size() >= 1
             && incoming().time.size() >= 1
+            && 'location' in incoming()
+            && incoming().location.size() >= 1
             && incoming().plan.size() >= 1
             && incoming().treatChoice == existing().treatPayer
             && incoming().letter.size() >= 1
-            && incoming().diff(existing()).affectedKeys().hasOnly(['day', 'time', 'plan', 'treatChoice', 'letter'])
+            && incoming().diff(existing()).affectedKeys().hasOnly(['day', 'time', 'location', 'plan', 'treatChoice', 'letter'])
           )
         );
     }

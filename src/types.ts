@@ -18,6 +18,7 @@ export interface Proposal {
   treatClicks: number;
   day: string;
   time: string;
+  location: string;
   plan: string;
   treatChoice: '' | TreatPayer;
   letter: string;

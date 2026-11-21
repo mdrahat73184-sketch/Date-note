@@ -58,6 +58,7 @@ function mapDocToProposal(id: string, data: Record<string, unknown>): Proposal {
     treatClicks: typeof data.treatClicks === 'number' ? data.treatClicks : 0,
     day: String(data.day ?? ''),
     time: String(data.time ?? ''),
+    location: String(data.location ?? ''),
     plan: String(data.plan ?? ''),
     treatChoice: rawChoice,
     letter: String(data.letter ?? ''),
@@ -100,6 +101,7 @@ export async function createProposal(
       treatClicks: 0,
       day: '',
       time: '',
+      location: '',
       plan: '',
       treatChoice: '',
       letter: '',
@@ -196,6 +198,7 @@ export async function sealProposal(
   payload: {
     day: string;
     time: string;
+    location: string;
     plan: string;
     treatChoice: TreatPayer;
     letter: string;
@@ -206,6 +209,7 @@ export async function sealProposal(
     await updateDoc(doc(db, 'proposals', proposalId), {
       day: payload.day.trim().slice(0, 60),
       time: payload.time.trim().slice(0, 60),
+      location: payload.location.trim().slice(0, 120),
       plan: payload.plan.trim().slice(0, 120),
       treatChoice: payload.treatChoice,
       letter: payload.letter.trim().slice(0, 4000),
@@ -221,6 +225,7 @@ function buildStaticFallbackLetter(params: {
   outingTopic: string;
   day: string;
   time: string;
+  location: string;
   plan: string;
   treatPayer: TreatPayer;
   treatClicks: number;
@@ -233,6 +238,7 @@ function buildStaticFallbackLetter(params: {
     outingTopic,
     day,
     time,
+    location,
     plan,
     treatPayer,
     treatClicks,
@@ -253,11 +259,12 @@ function buildStaticFallbackLetter(params: {
         : treatClicks > 0
           ? `আমাকে দিয়ে ট্রিট দেওয়ানোর ${treatClicks} বার চেষ্টার পরও শেষমেশ ট্রিটটা কিন্তু তোমারই রইল!`
           : `নিজে থেকেই ট্রিট দেওয়ার দায়িত্ব নেওয়ায় তোমাকে অসংখ্য ধন্যবাদ!`;
+    const placePart = location ? ` (${location}-এ)` : '';
     return [
       `প্রিয় ${receiverName},`,
       '',
       dodgeLine,
-      `${day} তারিখে ${time} সময়ে আমাদের ${outingTopic || 'আড্ডা'} (${plan}) একসাথে দারুণ কাটবে বলে আশা করছি।`,
+      `${day} তারিখে ${time} সময়ে${placePart} আমাদের ${outingTopic || 'আড্ডা'} (${plan}) একসাথে দারুণ কাটবে বলে আশা করছি।`,
       treatLine,
       '',
       `তোমার (একটু নার্ভাস হয়ে),`,
@@ -277,12 +284,13 @@ function buildStaticFallbackLetter(params: {
       : treatClicks > 0
         ? `Also, after ${treatClicks} attempt(s) to make me pay, I am officially looking forward to your treat!`
         : `Also, thank you for generously claiming the treat without a single hesitation!`;
+  const placePart = location ? ` at ${location}` : '';
 
   return [
     `Dear ${receiverName},`,
     '',
     dodgeLine,
-    `I already have ${day} at ${time} circled in my head for our ${outingTopic || 'date'} (${plan}).`,
+    `I already have ${day} at ${time}${placePart} circled in my head for our ${outingTopic || 'date'} (${plan}).`,
     treatLine,
     '',
     `Yours (a little nervously),`,
@@ -296,6 +304,7 @@ export async function generateLetter(params: {
   outingTopic: string;
   day: string;
   time: string;
+  location: string;
   plan: string;
   treatPayer: TreatPayer;
   treatChoice: TreatPayer;
