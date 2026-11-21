@@ -197,7 +197,7 @@ export function SenderCreator({
   return (
     <div className="min-h-screen bg-[#FAF6F0] text-[#181414] flex flex-col items-center justify-center px-4 py-8 sm:py-12">
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
         className="w-full max-w-xl bg-white rounded-3xl border border-[#EAE0D5] shadow-[0_24px_60px_-20px_rgba(68,45,38,0.12)] p-6 sm:p-10 space-y-7"
